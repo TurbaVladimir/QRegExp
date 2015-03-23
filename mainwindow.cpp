@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(ui->testText, &QTextEdit::textChanged, this, &MainWindow::check);
 	connect(ui->storageButton, &QPushButton::clicked, this, &MainWindow::openStorage);
 	connect(ui->saveButton, &QPushButton::clicked, this, &MainWindow::saveRegExp);
+	connect(ui->captures, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &MainWindow::loadCapture);
 	connect(storageUi->loadButton, &QPushButton::clicked, this, &MainWindow::loadRegExp);
 	connect(storageUi->deleteButton, &QPushButton::clicked, this, &MainWindow::deleteRegExp);
 }
@@ -76,21 +77,48 @@ void MainWindow::check()
 
 	timer.start();
 	QRegularExpressionMatch match = exp.match(ui->testText->toPlainText());
-	long elapsed = timer.elapsed();
+	int elapsed = timer.elapsed();
 
+	int captureIndex = ui->captures->currentIndex();
 	ui->resultText->clear();
+	captures.clear();
+	ui->captures->clear();
 	for (int i = 0; i < match.capturedTexts().size(); i++)
 	{
-		QString string = QString("[%1][%2-%3] '%4'\n").
-				arg(i).
-				arg(match.capturedStart(i)).
-				arg(match.capturedEnd(i)).
-				arg(match.captured(i));
-
-		ui->resultText->setText(QString("%1%2").arg(ui->resultText->toPlainText()).arg(string));
+		ui->captures->addItem(QString("[%1][%2-%3]").
+							  arg(i).
+							  arg(match.capturedStart(i)).
+							  arg(match.capturedEnd(i)));
+		captures.append(match.captured(i));
 	}
 
+	if ((captures.size() >= captureIndex) && (captureIndex >= 0))
+	{
+		ui->captures->setCurrentIndex(captureIndex);
+		ui->resultText->setText(captures.at(captureIndex));
+	}
+	else
+	{
+		if (match.hasMatch())
+		{
+			ui->resultText->setText(captures.at(0));
+		}
+	}
 	ui->statusBar->showMessage(QString("Captured %1 texts in %2 msec").arg(match.capturedTexts().size()).arg(elapsed), 5000);
+}
+
+void MainWindow::loadCapture(int index)
+{
+	if (!captures.isEmpty())
+	{
+		if (index < 0)
+		{
+			ui->captures->setCurrentIndex(0);
+			index = 0;
+		}
+
+		ui->resultText->setText(captures.at(index));
+	}
 }
 
 void MainWindow::saveRegExp()

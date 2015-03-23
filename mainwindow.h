@@ -6,6 +6,7 @@
 #include <QString>
 #include <QWidget>
 #include <QCloseEvent>
+#include <QList>
 
 #include "ui_storage.h"
 
@@ -23,6 +24,7 @@ public:
 
 private slots:
 	void check();
+	void loadCapture(int index);
 	void saveRegExp();
 	void openStorage();
 	void loadRegExp();
@@ -30,9 +32,11 @@ private slots:
 
 private:
 	void closeEvent(QCloseEvent*);
+
 	Ui::MainWindow* ui;
 	Ui_storageWindow* storageUi;
 	QWidget* storageWindow;
+	QList<QString> captures;
 };
 
 #endif // MAINWINDOW_H
