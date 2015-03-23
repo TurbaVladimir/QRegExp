@@ -4,6 +4,10 @@
 #include <QMainWindow>
 #include <QRegExp>
 #include <QString>
+#include <QWidget>
+#include <QCloseEvent>
+
+#include "ui_storage.h"
 
 namespace Ui {
 class MainWindow;
@@ -11,17 +15,24 @@ class MainWindow;
 
 class MainWindow : public QMainWindow
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+	explicit MainWindow(QWidget *parent = 0);
+	~MainWindow();
 
 private slots:
-    void check();
+	void check();
+	void saveRegExp();
+	void openStorage();
+	void loadRegExp();
+	void deleteRegExp();
 
 private:
-    Ui::MainWindow *ui;
+	void closeEvent(QCloseEvent*);
+	Ui::MainWindow* ui;
+	Ui_storageWindow* storageUi;
+	QWidget* storageWindow;
 };
 
 #endif // MAINWINDOW_H
