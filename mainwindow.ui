@@ -31,7 +31,7 @@
      <number>0</number>
     </property>
     <item row="0" column="0">
-     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <layout class="QVBoxLayout" name="verticalLayout">
       <property name="sizeConstraint">
        <enum>QLayout::SetMinimumSize</enum>
       </property>
@@ -48,7 +48,7 @@
        <number>5</number>
       </property>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
+       <layout class="QHBoxLayout" name="patterntLayout">
         <property name="leftMargin">
          <number>0</number>
         </property>
@@ -57,6 +57,15 @@
         </property>
         <item>
          <widget class="QLineEdit" name="regexp">
+          <property name="toolTip">
+           <string>Pattern</string>
+          </property>
+          <property name="toolTipDuration">
+           <number>1000</number>
+          </property>
+          <property name="whatsThis">
+           <string/>
+          </property>
           <property name="text">
            <string/>
           </property>
@@ -64,6 +73,12 @@
         </item>
         <item>
          <widget class="QPushButton" name="saveButton">
+          <property name="toolTip">
+           <string/>
+          </property>
+          <property name="toolTipDuration">
+           <number>-1</number>
+          </property>
           <property name="text">
            <string>Save</string>
           </property>
@@ -79,7 +94,7 @@
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <layout class="QHBoxLayout" name="modificatorsLayout">
         <item>
          <widget class="QCheckBox" name="dotMatch">
           <property name="text">
@@ -105,6 +120,12 @@
       </item>
       <item>
        <widget class="QTextEdit" name="testText">
+        <property name="toolTip">
+         <string>Input text</string>
+        </property>
+        <property name="toolTipDuration">
+         <number>1000</number>
+        </property>
         <property name="html">
          <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -123,6 +144,12 @@ p, li { white-space: pre-wrap; }
       </item>
       <item>
        <widget class="QTextEdit" name="resultText">
+        <property name="toolTip">
+         <string>Output text</string>
+        </property>
+        <property name="toolTipDuration">
+         <number>1000</number>
+        </property>
         <property name="readOnly">
          <bool>true</bool>
         </property>
