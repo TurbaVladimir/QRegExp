@@ -36,21 +36,9 @@ MainWindow::~MainWindow()
 
 void MainWindow::check()
 {
-	if ((ui->regexp->text().isEmpty()) || (ui->testText->document()->isEmpty()))
+	if (ui->regexp->text().isEmpty())
 	{
-		return;
-	}
-
-	QTime timer;
-
-	if (ui->regexp->text().size() == 0)
-	{
-		ui->statusBar->showMessage("Eneter regexp", 5000);
-		return;
-	}
-	if (ui->testText->toPlainText().size() == 0)
-	{
-		ui->statusBar->showMessage("Enter testing text", 5000);
+		ui->regexp->setStyleSheet("");
 		return;
 	}
 
@@ -69,12 +57,23 @@ void MainWindow::check()
 	}
 	if (!exp.isValid())
 	{
+		ui->regexp->setStyleSheet("QLineEdit{background: red;}");
+
 		ui->statusBar->showMessage(QString("%1 at %2 symbol").arg(exp.errorString()).arg(exp.patternErrorOffset()), 5000);
 		ui->regexp->setFocus(Qt::OtherFocusReason);
-		ui->regexp->setCursorPosition(exp.patternErrorOffset() - 1);
+		return;
+	}
+	else
+	{
+		ui->regexp->setStyleSheet("QLineEdit{background: green;}");
+	}
+
+	if (ui->testText->toPlainText().isEmpty())
+	{
 		return;
 	}
 
+	QTime timer;
 	timer.start();
 	QRegularExpressionMatch match = exp.match(ui->testText->toPlainText());
 	int elapsed = timer.elapsed();
@@ -92,7 +91,7 @@ void MainWindow::check()
 		captures.append(match.captured(i));
 	}
 
-	if ((captures.size() >= captureIndex) && (captureIndex >= 0))
+	if ((captures.size() > captureIndex) && (captureIndex >= 0))
 	{
 		ui->captures->setCurrentIndex(captureIndex);
 		ui->resultText->setText(captures.at(captureIndex));
