@@ -11,11 +11,20 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = qregexp_tester
 TEMPLATE = app
 
+DEFINES += "STORAGE_FILENAME=storage"
+
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+	mainwindow.cpp \
+    storagewindow.cpp \
+    modificatorswindow.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    storagewindow.h \
+    modificatorswindow.h
 
 FORMS    += mainwindow.ui \
-    storage.ui
+    storage.ui \
+    modificators.ui
+
+RESOURCES +=

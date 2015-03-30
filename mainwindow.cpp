@@ -11,27 +11,35 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 	ui->setupUi(this);
 
-	storageWindow = new QWidget;
-	storageUi = new Ui_storageWindow;
-	storageUi->setupUi(storageWindow);
+	modificatorsWindow = new ModificatorsWindow;
+	storageWindow = new StorageWindow;
+
+	connect(modificatorsWindow->ui->caseInsensitive, &QCheckBox::clicked, this, &MainWindow::check);
+	connect(modificatorsWindow->ui->DontCapture, &QCheckBox::clicked, this, &MainWindow::check);
+	connect(modificatorsWindow->ui->dotMatch, &QCheckBox::clicked, this, &MainWindow::check);
+	connect(modificatorsWindow->ui->extendPattern, &QCheckBox::clicked, this, &MainWindow::check);
+	connect(modificatorsWindow->ui->invertedGreediness, &QCheckBox::clicked, this, &MainWindow::check);
+	connect(modificatorsWindow->ui->multiLine, &QCheckBox::clicked, this, &MainWindow::check);
+	connect(modificatorsWindow->ui->useUnicode, &QCheckBox::clicked, this, &MainWindow::check);
 
 	connect(ui->regexp, &QLineEdit::textChanged, this, &MainWindow::check);
-	connect(ui->caseInsensitive, &QCheckBox::clicked, this, &MainWindow::check);
-	connect(ui->dotMatch, &QCheckBox::clicked, this, &MainWindow::check);
-	connect(ui->multiLine, &QCheckBox::clicked, this, &MainWindow::check);
 	connect(ui->testText, &QTextEdit::textChanged, this, &MainWindow::check);
-	connect(ui->storageButton, &QPushButton::clicked, this, &MainWindow::openStorage);
+	connect(ui->storageButton, &QPushButton::clicked, this, &MainWindow::switchStorageWindow);
 	connect(ui->saveButton, &QPushButton::clicked, this, &MainWindow::saveRegExp);
-	connect(ui->captures, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &MainWindow::loadCapture);
-	connect(storageUi->loadButton, &QPushButton::clicked, this, &MainWindow::loadRegExp);
-	connect(storageUi->deleteButton, &QPushButton::clicked, this, &MainWindow::deleteRegExp);
+	connect(ui->modificatorsButton, &QPushButton::clicked, this, &MainWindow::switchModificatorsWindow);
+	connect(ui->captures, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &MainWindow::switchCaptureGroup);
+
+	connect(storageWindow, &StorageWindow::regExp, this, &MainWindow::setRegExp);
+	connect(storageWindow, &StorageWindow::regExp, this, &MainWindow::check);
+	connect(storageWindow, &StorageWindow::statusBarText, this, &MainWindow::setStatusBarText);
+	connect(ui->saveButton, &QPushButton::clicked, storageWindow, &StorageWindow::fillRegExpList);
 }
 
 MainWindow::~MainWindow()
 {
 	delete ui;
-	delete storageUi;
 	storageWindow->deleteLater();
+	modificatorsWindow->deleteLater();
 }
 
 void MainWindow::check()
@@ -43,18 +51,36 @@ void MainWindow::check()
 	}
 
 	QRegularExpression exp(ui->regexp->text());
-	if (ui->multiLine->isChecked())
-	{
-		exp.setPatternOptions(QRegularExpression::MultilineOption);
-	}
-	if (ui->caseInsensitive->isChecked())
+
+	if (modificatorsWindow->ui->caseInsensitive->isChecked())
 	{
 		exp.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
 	}
-	if (ui->dotMatch->isChecked())
+	if (modificatorsWindow->ui->DontCapture->isChecked())
+	{
+		exp.setPatternOptions(QRegularExpression::DontCaptureOption);
+	}
+	if (modificatorsWindow->ui->dotMatch->isChecked())
 	{
 		exp.setPatternOptions(QRegularExpression::DotMatchesEverythingOption);
 	}
+	if (modificatorsWindow->ui->extendPattern->isChecked())
+	{
+		exp.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
+	}
+	if (modificatorsWindow->ui->invertedGreediness->isChecked())
+	{
+		exp.setPatternOptions(QRegularExpression::InvertedGreedinessOption);
+	}
+	if (modificatorsWindow->ui->multiLine->isChecked())
+	{
+		exp.setPatternOptions(QRegularExpression::MultilineOption);
+	}
+	if (modificatorsWindow->ui->useUnicode->isChecked())
+	{
+		exp.setPatternOptions(QRegularExpression::UseUnicodePropertiesOption);
+	}
+
 	if (!exp.isValid())
 	{
 		ui->regexp->setStyleSheet("QLineEdit{background: red;}");
@@ -106,7 +132,17 @@ void MainWindow::check()
 	ui->statusBar->showMessage(QString("Captured %1 texts in %2 msec").arg(match.capturedTexts().size()).arg(elapsed), 5000);
 }
 
-void MainWindow::loadCapture(int index)
+void MainWindow::setStatusBarText(QString text, int time = 0)
+{
+	ui->statusBar->showMessage(text, time);
+}
+
+void MainWindow::setRegExp(QString regexp)
+{
+	ui->regexp->setText(regexp);
+}
+
+void MainWindow::switchCaptureGroup(int index)
 {
 	if (!captures.isEmpty())
 	{
@@ -127,7 +163,7 @@ void MainWindow::saveRegExp()
 		return;
 	}
 
-	QFile file("storage");
+	QFile file("STORAGE_FILENAME");
 	file.open(QFile::ReadWrite);
 	if (!file.isOpen())
 	{
@@ -153,76 +189,27 @@ void MainWindow::saveRegExp()
 	ui->statusBar->showMessage("RegExp saved", 3000);
 }
 
-void MainWindow::openStorage()
+void MainWindow::switchModificatorsWindow()
 {
-	storageUi->regexpList->clear();
-
-	QFile file("storage");
-	file.open(QFile::ReadWrite);
-	if (!file.isOpen())
+	if (!modificatorsWindow->isVisible())
 	{
-		ui->statusBar->showMessage(file.errorString(), 3000);
-		return;
+		modificatorsWindow->show();
 	}
-
-	while (!file.atEnd())
+	else
 	{
-		QString line = QString(file.readLine());
-		line.resize(line.size() - 1);
-		storageUi->regexpList->addItem(line);
+		modificatorsWindow->close();
 	}
-
-	file.close();
-	storageWindow->show();
 }
 
-void MainWindow::loadRegExp()
+void MainWindow::switchStorageWindow()
 {
-	ui->regexp->setText(storageUi->regexpList->currentItem()->text());
-	storageWindow->close();
-	check();
-}
-
-void MainWindow::deleteRegExp()
-{
-	QFile file("storage");
-	file.open(QFile::ReadWrite);
-	if (!file.isOpen())
+	if (!storageWindow->isVisible())
 	{
-		ui->statusBar->showMessage(file.errorString(), 3000);
-		return;
+		storageWindow->fillRegExpList();
+		storageWindow->show();
 	}
-
-	QList<QString> list;
-
-	while (!file.atEnd())
+	else
 	{
-		QString line = QString(file.readLine());
-		line.resize(line.size() - 1);
-		list.append(line);
+		storageWindow->close();
 	}
-
-	file.resize(0);
-
-	for (int i = 0; i < list.size(); i++)
-	{
-		if (list.at(i) == storageUi->regexpList->currentItem()->text())
-		{
-			list.removeAt(i);
-		}
-	}
-	for (int i = 0; i < list.size(); i++)
-	{
-		file.write(list.at(i).toUtf8());
-		file.write("\n");
-	}
-
-	file.close();
-	delete storageUi->regexpList->currentItem();
-	ui->statusBar->showMessage("RegExp deleted", 3000);
-}
-
-void MainWindow::closeEvent(QCloseEvent*)
-{
-	storageWindow->close();
 }

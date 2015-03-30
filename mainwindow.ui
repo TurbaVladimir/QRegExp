@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>300</height>
+    <height>400</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -74,6 +74,10 @@
           </property>
          </widget>
         </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="controlLayout">
         <item>
          <widget class="QPushButton" name="saveButton">
           <property name="toolTip">
@@ -94,28 +98,10 @@
           </property>
          </widget>
         </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="modificatorsLayout">
         <item>
-         <widget class="QCheckBox" name="dotMatch">
+         <widget class="QPushButton" name="modificatorsButton">
           <property name="text">
-           <string>Dot match everything</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="caseInsensitive">
-          <property name="text">
-           <string>Case Insensitive</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="multiLine">
-          <property name="text">
-           <string>Multiline</string>
+           <string>Modificators</string>
           </property>
          </widget>
         </item>
