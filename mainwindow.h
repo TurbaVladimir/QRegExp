@@ -24,6 +24,7 @@ public:
 
 private:
 	Ui::MainWindow* ui;
+	QRegularExpressionMatch lastMatch;
 	ModificatorsWindow* modificatorsWindow;
 	StorageWindow* storageWindow;
 	QList<QString> captures;

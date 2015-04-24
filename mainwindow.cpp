@@ -1,6 +1,8 @@
 #include <QTime>
 #include <QFile>
 #include <QList>
+#include <QTextCursor>
+#include <QTextCharFormat>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -101,21 +103,34 @@ void MainWindow::check()
 
 	QTime timer;
 	timer.start();
-	QRegularExpressionMatch match = exp.match(ui->testText->toPlainText());
+	lastMatch = exp.match(ui->testText->toPlainText());
 	int elapsed = timer.elapsed();
 
 	int captureIndex = ui->captures->currentIndex();
 	ui->resultText->clear();
 	captures.clear();
 	ui->captures->clear();
-	for (int i = 0; i < match.capturedTexts().size(); i++)
+
+	disconnect(ui->testText, &QTextEdit::textChanged, this, &MainWindow::check);
+	QTextCursor crs(ui->testText->document());
+	crs.select(QTextCursor::Document);
+	crs.setCharFormat(QTextCharFormat());
+
+	for (int i = 0; i < lastMatch.capturedTexts().size(); i++)
 	{
+		QTextCharFormat fmt;
+		fmt.setBackground(Qt::blue);
+		crs.setPosition(lastMatch.capturedStart(i), QTextCursor::MoveAnchor);
+		crs.setPosition(lastMatch.capturedEnd(i), QTextCursor::KeepAnchor);
+		crs.setCharFormat(fmt);
+
 		ui->captures->addItem(QString("[%1][%2-%3]").
 							  arg(i).
-							  arg(match.capturedStart(i)).
-							  arg(match.capturedEnd(i)));
-		captures.append(match.captured(i));
+							  arg(lastMatch.capturedStart(i)).
+							  arg(lastMatch.capturedEnd(i)));
+		captures.append(lastMatch.captured(i));
 	}
+	connect(ui->testText, &QTextEdit::textChanged, this, &MainWindow::check);
 
 	if ((captures.size() > captureIndex) && (captureIndex >= 0))
 	{
@@ -124,12 +139,13 @@ void MainWindow::check()
 	}
 	else
 	{
-		if (match.hasMatch())
+		if (lastMatch.hasMatch())
 		{
 			ui->resultText->setText(captures.at(0));
 		}
 	}
-	ui->statusBar->showMessage(QString("Captured %1 texts in %2 msec").arg(match.capturedTexts().size()).arg(elapsed), 5000);
+
+	ui->statusBar->showMessage(QString("Captured %1 texts in %2 msec").arg(lastMatch.capturedTexts().size()).arg(elapsed), 5000);
 }
 
 void MainWindow::setStatusBarText(QString text, int time = 0)
@@ -144,16 +160,29 @@ void MainWindow::setRegExp(QString regexp)
 
 void MainWindow::switchCaptureGroup(int index)
 {
-	if (!captures.isEmpty())
+	if (captures.isEmpty())
 	{
-		if (index < 0)
-		{
-			ui->captures->setCurrentIndex(0);
-			index = 0;
-		}
-
-		ui->resultText->setText(captures.at(index));
+		return;
 	}
+	if (index < 0)
+	{
+		ui->captures->setCurrentIndex(0);
+		index = 0;
+	}
+
+	ui->resultText->setText(captures.at(index));
+
+	disconnect(ui->testText, &QTextEdit::textChanged, this, &MainWindow::check);
+	QTextCursor crs(ui->testText->document());
+	crs.select(QTextCursor::Document);
+	crs.setCharFormat(QTextCharFormat());
+	QTextCharFormat fmt;
+	fmt.setBackground(Qt::blue);
+	crs.setPosition(lastMatch.capturedStart(index), QTextCursor::MoveAnchor);
+	crs.setPosition(lastMatch.capturedEnd(index), QTextCursor::KeepAnchor);
+	crs.setCharFormat(fmt);
+	connect(ui->testText, &QTextEdit::textChanged, this, &MainWindow::check);
+
 }
 
 void MainWindow::saveRegExp()
